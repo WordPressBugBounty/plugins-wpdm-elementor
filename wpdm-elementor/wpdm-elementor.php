@@ -3,12 +3,12 @@
  * Plugin Name: WPDM - Elementor
  * Plugin URI: https://www.wpdownloadmanager.com/download/wpdm-elementor/
  * Description: Download Manger modules for Elementor
- * Version: 1.2.5
+ * Version: 1.3.0
  * Author: WordPress Download Manager
  * Text Domain: wpdm-elementor
  * Author URI: https://www.wpdownloadmanager.com/
- * Elementor tested up to: 3.21
- * Elementor Pro tested up to: 3.21
+ * Elementor tested up to: 3.28
+ * Elementor Pro tested up to: 3.28
  */
 
 use WPDM\Elementor\Main;

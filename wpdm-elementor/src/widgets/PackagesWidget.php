@@ -125,7 +125,7 @@ class PackagesWidget extends Widget_Base
 
         //order by: Select
         $this->add_control(
-            'order_by',
+            'orderby',
             [
                 'label' => esc_attr(__('Order By', WPDM_ELEMENTOR)),
                 'type' => \Elementor\Controls_Manager::SELECT2,

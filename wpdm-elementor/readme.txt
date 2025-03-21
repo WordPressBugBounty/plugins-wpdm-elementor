@@ -3,7 +3,7 @@ Contributors: w3eden, codename065, ohanspace, shahriar0822, shimo16ab, shafayat-
 Donate link:
 Tags: download manager, elementor, document management, file manager, digital store, ecommerce, document management plugin,  download monitor
 Requires at least: 5.3
-Tested up to: 6.5
+Tested up to: 6.7
 License: GPLv2 or later
 
 
@@ -30,6 +30,9 @@ When you are using elementor and download manager together, you will not need to
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.3.0 - 2025.03.21 =
+✅ Enhanced System Optimization and Compatibility Assurance Update
 
 = 1.2.5 - 2024.04.26 =
 🐞 Fixed an issue with missing template names in category and package widgets
