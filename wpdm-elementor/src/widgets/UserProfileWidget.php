@@ -2,10 +2,24 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class UserProfileWidget extends Widget_Base
+/**
+ * User Profile Widget.
+ * Displays user profile.
+ * Note: This widget is currently disabled in Main.php
+ */
+class UserProfileWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = ['template'];
+
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'template' => 'text',
+    ];
 
     public function get_name()
     {
@@ -14,57 +28,45 @@ class UserProfileWidget extends Widget_Base
 
     public function get_title()
     {
-        return 'User Profile';
+        return __('User Profile', WPDM_ELEMENTOR);
     }
 
     public function get_icon()
     {
-        return 'fa fa-user-o';
-    }
-
-    public function get_categories()
-    {
-        return ['wpdm'];
+        return 'eicon-user-circle-o';
     }
 
     protected function register_controls()
     {
-
         $this->start_controls_section(
             'content_section',
             [
-                'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
+                'label' => __('Parameters', WPDM_ELEMENTOR),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
-        //link template: select
         $this->add_control(
             'template',
             [
-                'label' => esc_attr(__('Link Template', WPDM_ELEMENTOR)),
+                'label' => __('Link Template', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
                 'options' => get_wpdm_link_templates(),
-                'default' => 'link-default-default'
+                'default' => 'link-template-default'
             ]
         );
-
 
         $this->end_controls_section();
     }
 
-
-
     protected function render()
     {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
-        $settings = $this->get_settings_for_display();
-        $cus_settings = array_slice($settings, 0, 5);
-
-        echo '<div class="oembed-elementor-widget">';
-        // p($cus_settings);
-        echo WPDM()->user->profile->profile($cus_settings);
-
-        echo '</div>';
+        echo $this->wrapOutput(
+            WPDM()->user->profile->profile($settings),
+            'user-profile-widget'
+        );
     }
 }

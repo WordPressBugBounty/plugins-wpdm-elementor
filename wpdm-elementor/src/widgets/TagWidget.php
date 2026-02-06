@@ -2,10 +2,37 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class TagWidget extends Widget_Base
+/**
+ * Tag Widget.
+ * Displays packages filtered by tags.
+ * Note: This widget is currently disabled in Main.php
+ */
+class TagWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = [
+        'tagid', 'title', 'desc', 'items_per_page',
+        'orderby', 'order', 'template',
+        'cols', 'colspad', 'colsphone', 'toolbar'
+    ];
+
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'title' => 'text',
+        'desc' => 'text',
+        'items_per_page' => 'int',
+        'orderby' => 'orderby',
+        'order' => 'order',
+        'template' => 'text',
+        'cols' => 'int',
+        'colspad' => 'int',
+        'colsphone' => 'int',
+        'toolbar' => 'text',
+    ];
 
     public function get_name()
     {
@@ -14,162 +41,143 @@ class TagWidget extends Widget_Base
 
     public function get_title()
     {
-        return 'Packages By Tags';
+        return __('Packages By Tags', WPDM_ELEMENTOR);
     }
 
     public function get_icon()
     {
-        return 'fa fa-tags';
-    }
-
-    public function get_categories()
-    {
-        return ['wpdm'];
+        return 'eicon-tags';
     }
 
     protected function register_controls()
     {
-
         $this->start_controls_section(
             'content_section',
             [
-                'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
+                'label' => __('Parameters', WPDM_ELEMENTOR),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
-
-        //categories: multi select
         $this->add_control(
             'tagid',
             [
-                'label' => esc_attr(__('Tags', WPDM_ELEMENTOR)),
+                'label' => __('Tags', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
                 'multiple' => true,
-                'options' => get_wpdmcategory_terms(),
+                'options' => $this->getTagOptions(),
                 'default' => []
             ]
         );
 
-        //title: Text
         $this->add_control(
             'title',
             [
-                'label' => esc_attr(__('Title', WPDM_ELEMENTOR)),
+                'label' => __('Title', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'text',
-                'description' => esc_attr(__('You can use any text there, if you use “1” then it will show the Tag title', WPDM_ELEMENTOR)),
+                'description' => __('Use "1" to show tag title, or enter custom text', WPDM_ELEMENTOR),
                 'default' => '1'
             ]
         );
 
-        //description: Text
         $this->add_control(
             'desc',
             [
-                'label' => esc_attr(__('Description', WPDM_ELEMENTOR)),
+                'label' => __('Description', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'text',
-                'description' => esc_attr(__('You can use any text there, if you use “1” then it will show the tag description', WPDM_ELEMENTOR)),
+                'description' => __('Use "1" to show tag description, or enter custom text', WPDM_ELEMENTOR),
                 'default' => '1'
-
             ]
         );
 
-        //items per page: text number
         $this->add_control(
             'items_per_page',
             [
-                'label' => esc_attr(__('Items Per Page', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '10'
+                'label' => __('Items Per Page', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 100,
+                'default' => 10
             ]
         );
 
-
-        //order by: Select
         $this->add_control(
             'orderby',
             [
-                'label' => esc_attr(__('Order By', WPDM_ELEMENTOR)),
+                'label' => __('Order By', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
-                'options' => ['date' => 'Date', 'title' => 'Title'],
+                'options' => ['date' => __('Date', WPDM_ELEMENTOR), 'title' => __('Title', WPDM_ELEMENTOR)],
                 'default' => 'date',
             ]
         );
 
-        //order: Choose
         $this->add_control(
             'order',
             [
-                'label' => esc_attr(__('Order', WPDM_ELEMENTOR)),
+                'label' => __('Order', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    'ASC' => ['title' => 'Ascending', 'icon' => 'fa fa-sort-alpha-down'],
-                    'DESC' => ['title' => 'Descending', 'icon' => 'fa fa-sort-alpha-up']
+                    'ASC' => ['title' => __('Ascending', WPDM_ELEMENTOR), 'icon' => 'eicon-arrow-up'],
+                    'DESC' => ['title' => __('Descending', WPDM_ELEMENTOR), 'icon' => 'eicon-arrow-down']
                 ],
                 'default' => 'DESC',
-                'show_label' => false
+                'toggle' => false
             ]
         );
-
-
-        //link template: select
 
         $this->add_control(
             'template',
             [
-                'label' => esc_attr(__('Link Template', WPDM_ELEMENTOR)),
+                'label' => __('Link Template', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
                 'options' => get_wpdm_link_templates(),
-                'default' => 'link-default-default'
+                'default' => 'link-template-default'
             ]
         );
 
-
-        //cols web
         $this->add_control(
             'cols',
             [
-                'label' => esc_attr(__('Columns In PC', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '3'
+                'label' => __('Columns (Desktop)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 6,
+                'default' => 3
             ]
         );
 
-        //cols tab
         $this->add_control(
             'colspad',
             [
-                'label' => esc_attr(__('Columns In Tab', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '2'
+                'label' => __('Columns (Tablet)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 4,
+                'default' => 2
             ]
         );
 
-        //cols phone
         $this->add_control(
             'colsphone',
             [
-                'label' => esc_attr(__('Columns In Phone', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '1'
+                'label' => __('Columns (Phone)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 2,
+                'default' => 1
             ]
         );
 
-        //Show Toolbar: radio
         $this->add_control(
             'toolbar',
             [
-                'label' => esc_attr(__('Show Toolbar', WPDM_ELEMENTOR)),
+                'label' => __('Show Toolbar', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    '1' => ['title' => 'Show', 'icon' => 'fa fa-check'],
-                    '0' => ['title' => 'Hide', 'icon' => 'fa fa-times']
+                    '1' => ['title' => __('Show', WPDM_ELEMENTOR), 'icon' => 'eicon-check'],
+                    '0' => ['title' => __('Hide', WPDM_ELEMENTOR), 'icon' => 'eicon-close']
                 ],
                 'default' => '1',
             ]
@@ -178,17 +186,22 @@ class TagWidget extends Widget_Base
         $this->end_controls_section();
     }
 
-
-
     protected function render()
     {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
-        $settings = $this->get_settings_for_display();
-        $cus_settings = array_slice($settings, 0, 15);
+        if (empty($settings['tagid'])) {
+            return;
+        }
 
-        $cus_settings['id'] = implode(",", $cus_settings['tagid']);
+        // Convert tagid array to comma-separated id
+        $settings['id'] = is_array($settings['tagid'])
+            ? implode(',', array_map('sanitize_text_field', $settings['tagid']))
+            : sanitize_text_field($settings['tagid']);
 
-        echo WPDM()->package->shortCodes->packagesByTag($cus_settings);
+        unset($settings['tagid']);
 
+        echo WPDM()->package->shortCodes->packagesByTag($settings);
     }
 }

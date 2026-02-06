@@ -3,7 +3,7 @@ Contributors: w3eden, codename065, ohanspace, shahriar0822, shimo16ab, shafayat-
 Donate link:
 Tags: download manager, elementor, document management, file manager, digital store, ecommerce, document management plugin,  download monitor
 Requires at least: 5.3
-Tested up to: 6.7
+Tested up to: 6.9
 License: GPLv2 or later
 
 
@@ -11,18 +11,26 @@ Download Manager Addons for Elementor
 
 == Description ==
 
-When you are using elementor and download manager together, you will not need to write download manager shortcodes manually anymore, this plugin provides configurable elementor modules for all download manager shortcode.
+When you are using Elementor and Download Manager together, you will not need to write download manager shortcodes manually anymore. This plugin provides configurable Elementor widgets for all Download Manager features.
 
 = Addons =
 * Package - Embed a single file/package
-* Packages - Embed all packages with various filter
+* Packages - Embed all packages with various filters
 * Packages by Category
 * Packages by Tags
-* All Downloads Table
+* Packages Table - Visual table builder with drag-and-drop column configuration
 * Search and Search Result
 * User Registration Form
 * User Login Form
 * User Dashboard
+
+= Packages Table Builder =
+Create beautiful download tables with our visual table builder:
+* Drag-and-drop column ordering
+* 20+ data fields (title, categories, download button, file size, etc.)
+* Multiple fields per column support
+* Custom column widths and text alignment
+* DataTable.js integration for sorting and filtering
 
 == Installation ==
 
@@ -30,6 +38,28 @@ When you are using elementor and download manager together, you will not need to
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 2.0.1 - 2026.01.19 =
+🐞 Fixed an issue with the author dashboard widget
+
+= 2.0.0 - 2025.12.26 =
+✅ New visual table builder for Packages Table widget
+✅ Drag-and-drop column configuration with Repeater control
+✅ Multi-select data fields dropdown (20+ fields available)
+✅ Column width and text alignment options per column
+✅ Legacy mode toggle for backward compatibility
+✅ Added BaseWidget abstract class for all widgets
+✅ Added input sanitization for all widget settings
+✅ Added dependency check for WPDM and Elementor
+✅ Added Composer PSR-4 autoloading support
+✅ Added style controls helpers (container, typography)
+✅ Added new REST endpoint for category search
+✅ Improved REST API security with prepared statements
+✅ Improved code organization with proper namespacing
+🐞 Fixed taxonomy typo in helper functions
+🐞 Fixed hook timing issues for Elementor and REST API
+🐞 Fixed categories array handling in Packages Table widget
+✅ Updated all widgets to use new BaseWidget class
 
 = 1.3.0 - 2025.03.21 =
 ✅ Enhanced System Optimization and Compatibility Assurance Update

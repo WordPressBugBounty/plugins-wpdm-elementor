@@ -2,134 +2,132 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class DirectLinkWidget extends Widget_Base
+/**
+ * Direct Link Widget.
+ * Creates a direct download link for a package.
+ */
+class DirectLinkWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = ['pid', 'target', 'label', 'class', 'eid', 'style'];
 
-	public function get_name()
-	{
-		return 'wpdmdirectlink';
-	}
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'pid' => 'int',
+        'target' => 'text',
+        'label' => 'text',
+        'class' => 'css_class',
+        'eid' => 'text',
+        'style' => 'css_style',
+    ];
 
-	public function get_title()
-	{
-		return 'Direct download link';
-	}
+    public function get_name()
+    {
+        return 'wpdmdirectlink';
+    }
 
-	public function get_icon()
-	{
-		return 'eicon-editor-link';
-	}
+    public function get_title()
+    {
+        return __('Direct download link', WPDM_ELEMENTOR);
+    }
 
-	public function get_categories()
-	{
-		return ['wpdm'];
-	}
+    public function get_icon()
+    {
+        return 'eicon-editor-link';
+    }
 
-	protected function register_controls()
-	{
+    protected function register_controls()
+    {
+        $this->start_controls_section(
+            'content_section',
+            [
+                'label' => __('Parameters', WPDM_ELEMENTOR),
+                'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
+            ]
+        );
 
-		$this->start_controls_section(
-			'content_section',
-			[
-				'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
-				'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
-			]
-		);
+        $this->add_control(
+            'pid',
+            [
+                'label' => __('Package', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::SELECT2,
+                'placeholder' => __('Package', WPDM_ELEMENTOR),
+                'select2options' => $this->getPackageSearchConfig()
+            ]
+        );
 
-		//Package: Text
-		$this->add_control(
-			'pid',
-			[
-				'label' => esc_attr(__('Package', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::SELECT2,
-				'placeholder' => esc_attr(__('Package', WPDM_ELEMENTOR)),
-				'select2options' => [
-					'placeholder' => 'Type Package title',
-					'ajax' => [
-						'url' =>  get_rest_url(null, 'wpdm-elementor/v1/search-packages'),
-						'dataType' => 'json',
-						'delay' => 250
-					],
-					'minimumInputLength' => 2
-				]
-			]
-		);
+        $this->add_control(
+            'target',
+            [
+                'label' => __('Link Target', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::SELECT2,
+                'options' => ['_blank' => '_blank', '_self' => '_self'],
+                'default' => '_blank'
+            ]
+        );
 
-		//link template: select
-		$this->add_control(
-			'target',
-			[
-				'label' => esc_attr(__('Link Template', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::SELECT2,
-				'options' => ['_blank' => '_blank', '_self' => '_self'],
-				'default' => '_blank'
-			]
-		);
+        $this->add_control(
+            'label',
+            [
+                'label' => __('Download link label', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'input_type' => 'text',
+                'default' => 'Download',
+                'placeholder' => __('Download', WPDM_ELEMENTOR),
+            ]
+        );
 
-		//label	Download link label
-		$this->add_control(
-			'label',
-			[
-				'label' => esc_attr(__('Download link label', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::TEXT,
-				'input_type' => 'text',
-				'default' => 'Download',
-				'placeholder' => esc_attr(__('Download', WPDM_ELEMENTOR)),
-			]
-		);
+        $this->add_control(
+            'class',
+            [
+                'label' => __('CSS class name', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'input_type' => 'text',
+            ]
+        );
 
-		//class	CSS class name, in case you want to apply some css style
-		$this->add_control(
-			'class',
-			[
-				'label' => esc_attr(__('CSS class name', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::TEXT,
-				'input_type' => 'text',
-			]
-		);
+        $this->add_control(
+            'eid',
+            [
+                'label' => __('HTML element ID', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'input_type' => 'text',
+            ]
+        );
 
+        $this->add_control(
+            'style',
+            [
+                'label' => __('CSS Style', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXTAREA,
+                'rows' => 5,
+                'placeholder' => __('e.g., color: #3399ff;', WPDM_ELEMENTOR),
+            ]
+        );
 
-		//eid HTML element ID
-		$this->add_control(
-			'eid',
-			[
-				'label' => esc_attr(__('HTML element ID', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::TEXT,
-				'input_type' => 'text',
-			]
-		);
+        $this->end_controls_section();
+    }
 
-		//style	Apple raw css code ( ex: style="color: #3399ff;" )
-		$this->add_control(
-			'style',
-			[
-				'label' => esc_attr(__('CSS Style', WPDM_ELEMENTOR)),
-				'type' => \Elementor\Controls_Manager::TEXTAREA,
-				'rows' => 10,
-				'placeholder' => esc_attr(__('Apple raw css code', WPDM_ELEMENTOR)),
-			]
-		);
+    protected function render()
+    {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
+        if (empty($settings['pid'])) {
+            return;
+        }
 
+        // Map pid to id for WPDM shortcode
+        $settings['id'] = $settings['pid'];
+        unset($settings['pid']);
 
-		$this->end_controls_section();
-	}
-
-
-
-	protected function render()
-	{
-
-		$settings = $this->get_settings_for_display();
-		$cus_settings = array_slice($settings, 0, 8);
-
-		echo '<div class="oembed-elementor-widget">';
-		// p($cus_settings);
-		$cus_settings['id'] = $cus_settings['pid'];
-		echo WPDM()->package->shortCodes->directLink($cus_settings);
-
-		echo '</div>';
-	}
+        echo $this->wrapOutput(
+            WPDM()->package->shortCodes->directLink($settings),
+            'direct-link-widget'
+        );
+    }
 }

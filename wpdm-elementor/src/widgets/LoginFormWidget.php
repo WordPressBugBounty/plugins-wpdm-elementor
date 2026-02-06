@@ -2,10 +2,27 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class LoginFormWidget extends Widget_Base
+/**
+ * Login Form Widget.
+ * Displays a user login form.
+ */
+class LoginFormWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = ['redirect', 'logo', 'regurl', 'note_before', 'note_after'];
+
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'redirect' => 'url',
+        'logo' => 'url',
+        'regurl' => 'url',
+        'note_before' => 'html',
+        'note_after' => 'html',
+    ];
 
     public function get_name()
     {
@@ -14,7 +31,7 @@ class LoginFormWidget extends Widget_Base
 
     public function get_title()
     {
-        return 'Login Form';
+        return __('Login Form', WPDM_ELEMENTOR);
     }
 
     public function get_icon()
@@ -22,100 +39,80 @@ class LoginFormWidget extends Widget_Base
         return 'eicon-site-identity';
     }
 
-    public function get_categories()
-    {
-        return ['wpdm'];
-    }
-
     protected function register_controls()
     {
         $this->start_controls_section(
             'content_section',
             [
-                'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
+                'label' => __('Parameters', WPDM_ELEMENTOR),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
-
-        //redirect: optional, use an URL where you want users to redirect after login
         $this->add_control(
             'redirect',
             [
-                'label' => esc_attr(__('Redirect URL', WPDM_ELEMENTOR)),
+                'label' => __('Redirect URL', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'url',
-                'placeholder' => esc_attr(__('Redirect Url', WPDM_ELEMENTOR)),
-                'description' => 'optional, use an URL where you want users to redirect after login'
+                'placeholder' => __('Redirect URL', WPDM_ELEMENTOR),
+                'description' => __('URL to redirect after login', WPDM_ELEMENTOR)
             ]
         );
 
-
-        //logo: optional, add the logo or any image URL you want to show on top of the login form
         $this->add_control(
             'logo',
             [
-                'label' => esc_attr(__('Logo URL', WPDM_ELEMENTOR)),
+                'label' => __('Logo URL', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'url',
-                'placeholder' => esc_attr(__('Logo Url', WPDM_ELEMENTOR)),
-                'description' => 'optional, add the logo or any image URL you want to show on top of the login form'
+                'placeholder' => __('Logo URL', WPDM_ELEMENTOR),
+                'description' => __('Image URL to show on top of the form', WPDM_ELEMENTOR)
             ]
         );
 
-
-        //regurl: optional, in case, if you have multiple login pages and multiple signup page, you may mention the signup page URL for this login form. Otherwise, it will use the standard signup page URL.
         $this->add_control(
             'regurl',
             [
-                'label' => esc_attr(__("Registration URL", WPDM_ELEMENTOR)),
+                'label' => __('Registration URL', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'url',
-                'placeholder' => esc_attr(__('Logo Url', WPDM_ELEMENTOR)),
-                'description' => 'optional, in case, if you have multiple login pages and multiple signup page, you may mention the signup page URL for this login form. Otherwise, it will use the standard signup page URL.'
+                'placeholder' => __('Registration URL', WPDM_ELEMENTOR),
+                'description' => __('Custom signup page URL for this login form', WPDM_ELEMENTOR)
             ]
         );
 
-        //note_before: optional, text/note to show above the login form
         $this->add_control(
             'note_before',
             [
-                'label' => esc_attr(__("Note Before", WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'text',
-                'placeholder' => esc_attr(__('Note before', WPDM_ELEMENTOR)),
-                'description' => 'optional, text/note to show above the login form'
+                'label' => __('Note Before', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXTAREA,
+                'rows' => 3,
+                'placeholder' => __('Text to show above the form', WPDM_ELEMENTOR),
             ]
         );
 
-        // note_after: optional, text/note to show below the login form
         $this->add_control(
             'note_after',
             [
-                'label' => esc_attr(__("Note After", WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'text',
-                'placeholder' => esc_attr(__('Note After', WPDM_ELEMENTOR)),
-                'description' => 'optional, text/note to show below the login form'
+                'label' => __('Note After', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::TEXTAREA,
+                'rows' => 3,
+                'placeholder' => __('Text to show below the form', WPDM_ELEMENTOR),
             ]
         );
-
 
         $this->end_controls_section();
     }
 
-
-
     protected function render()
     {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
-        $settings = $this->get_settings_for_display();
-        $cus_settings = array_slice($settings, 0, 5);
-
-        echo '<div class="oembed-elementor-widget">';
-        // p($cus_settings);
-        echo WPDM()->user->login->form($cus_settings);
-
-        echo '</div>';
+        echo $this->wrapOutput(
+            WPDM()->user->login->form($settings),
+            'login-form-widget'
+        );
     }
 }

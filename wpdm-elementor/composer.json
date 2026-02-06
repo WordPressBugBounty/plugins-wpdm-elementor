@@ -1,0 +1,20 @@
+{
+    "name": "wpdm/wpdm-elementor",
+    "description": "Download Manager modules for Elementor",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "WPDM\\Elementor\\": "src/",
+            "WPDM\\Elementor\\Widgets\\": "src/widgets/",
+            "WPDM\\Elementor\\API\\": "src/api/"
+        },
+        "files": [
+            "src/constants.php",
+            "src/helper-functions.php"
+        ]
+    },
+    "require": {
+        "php": ">=7.4"
+    }
+}

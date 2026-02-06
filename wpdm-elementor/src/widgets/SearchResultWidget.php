@@ -2,10 +2,25 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class SearchResultWidget extends Widget_Base
+/**
+ * Search Result Widget.
+ * Displays search box and search results.
+ */
+class SearchResultWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = ['template', 'init', 'cols'];
+
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'template' => 'text',
+        'init' => 'text',
+        'cols' => 'int',
+    ];
 
     public function get_name()
     {
@@ -14,7 +29,7 @@ class SearchResultWidget extends Widget_Base
 
     public function get_title()
     {
-        return 'Search Result';
+        return __('Search Result', WPDM_ELEMENTOR);
     }
 
     public function get_icon()
@@ -22,71 +37,59 @@ class SearchResultWidget extends Widget_Base
         return 'eicon-search-results';
     }
 
-    public function get_categories()
-    {
-        return ['wpdm'];
-    }
-
     protected function register_controls()
     {
-
         $this->start_controls_section(
             'content_section',
             [
-                'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
+                'label' => __('Parameters', WPDM_ELEMENTOR),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
-        //link template: select
         $this->add_control(
             'template',
             [
-                'label' => esc_attr(__('Link Template', WPDM_ELEMENTOR)),
+                'label' => __('Link Template', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
                 'options' => get_wpdm_link_templates(),
-                'default' => 'link-default-default'
+                'default' => 'link-template-default'
             ]
         );
 
-        //init: 1 if you want to show some results initially, like the latest packages, skip the parameter or 0 if you don't want to show any package until you search
         $this->add_control(
             'init',
             [
-                'label' => esc_attr(__('Require Login', WPDM_ELEMENTOR)),
+                'label' => __('Show Initial Results', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    '0' => ['title' => 'No', 'icon' => 'fa fa-times'],
-                    '1' => ['title' => 'Yes', 'icon' => 'fa fa-check']
+                    '0' => ['title' => __('No', WPDM_ELEMENTOR), 'icon' => 'eicon-close'],
+                    '1' => ['title' => __('Yes', WPDM_ELEMENTOR), 'icon' => 'eicon-check']
                 ],
-                'default' => '1'
+                'default' => '1',
+                'description' => __('Show latest packages before search', WPDM_ELEMENTOR)
             ]
         );
-        
-        //cols: 1 or 2 or 3 or 4 columns search result
+
         $this->add_control(
             'cols',
             [
-                'label' => esc_attr(__('Columns', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '3'
+                'label' => __('Columns', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 4,
+                'default' => 3
             ]
         );
 
         $this->end_controls_section();
     }
 
-
-
     protected function render()
     {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
-        $settings = $this->get_settings_for_display();
-        $cus_settings = array_slice($settings, 0, 4);
-
-
-        echo WPDM()->package->shortCodes->searchResult($cus_settings);
-
+        echo WPDM()->package->shortCodes->searchResult($settings);
     }
 }

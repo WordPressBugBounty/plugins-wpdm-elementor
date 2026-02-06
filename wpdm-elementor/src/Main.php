@@ -1,4 +1,10 @@
 <?php
+/**
+ * Main plugin class for WPDM Elementor integration.
+ *
+ * @package WPDM\Elementor
+ * @since   1.0.0
+ */
 
 namespace WPDM\Elementor;
 
@@ -18,92 +24,154 @@ use WPDM\Elementor\Widgets\TagWidget;
 use WPDM\Elementor\Widgets\UserDashboardWidget;
 use WPDM\Elementor\Widgets\UserProfileWidget;
 
+/**
+ * Class Main
+ *
+ * Handles the initialization and registration of WPDM widgets with Elementor.
+ * Implements the Singleton pattern to ensure only one instance exists.
+ *
+ * @since 1.0.0
+ */
 final class Main
 {
+    /**
+     * Plugin version.
+     *
+     * @var string
+     */
+    const VERSION = '2.0.0';
 
     /**
-     * 
-     * 
+     * Minimum Elementor version required.
+     *
+     * @var string
      */
-    public static function getInstance()
+    const MINIMUM_ELEMENTOR_VERSION = '3.0.0';
+
+    /**
+     * Minimum PHP version required.
+     *
+     * @var string
+     */
+    const MINIMUM_PHP_VERSION = '7.4';
+
+    /**
+     * Get the singleton instance.
+     *
+     * Ensures only one instance of the class is loaded or can be loaded.
+     *
+     * @since  1.0.0
+     * @return self The singleton instance.
+     */
+    public static function getInstance(): self
     {
         static $instance;
         if (is_null($instance)) {
-            $instance = new self;
+            $instance = new self();
         }
         return $instance;
     }
 
     /**
-     * 
-     * 
+     * Private constructor to prevent direct instantiation.
+     *
+     * Initializes the API and sets up WordPress hooks.
+     *
+     * @since 1.0.0
      */
     private function __construct()
     {
         API::getInstance();
-        add_action("plugin_loaded", [$this, 'pluginLoaded']);
 
+        // Load text domain
+        load_plugin_textdomain(
+            'wpdm-elementor',
+            false,
+            dirname(plugin_basename(__DIR__)) . '/languages/'
+        );
+
+        // Register Elementor hooks - check if elementor/init already fired
+        if (did_action('elementor/init')) {
+            $this->addHooks();
+        } else {
+            add_action('elementor/init', [$this, 'addHooks']);
+        }
     }
-
-    function pluginLoaded(){
-	    load_plugin_textdomain('wpdm-elementor', dirname(__DIR__) . "/languages/", basename(__DIR__).'/languages/');
-        add_action( 'elementor/init', [ $this, 'addHooks' ] );
-    }
-
 
     /**
-     * 
-     * 
+     * Register Elementor-specific hooks.
+     *
+     * Sets up category and widget registration hooks.
+     *
+     * @since 1.0.0
+     * @return void
      */
-    function addHooks()
+    public function addHooks(): void
     {
         add_action('elementor/elements/categories_registered', [$this, 'registerCategory'], 0);
         add_action('elementor/widgets/register', [$this, 'registerWidgets'], 99);
     }
 
     /**
-     * 
-     * 
+     * Register the WPDM widget category.
+     *
+     * Adds a 'Download Manager' category to the Elementor widget panel.
+     *
+     * @since 1.0.0
+     * @param Elements_Manager $elements_manager Elementor elements manager instance.
+     * @return void
      */
-    public function registerCategory(Elements_Manager $elementsManager)
+    public function registerCategory(Elements_Manager $elements_manager): void
     {
-        $elementsManager->add_category('wpdm', ['title' => 'Download Manager']);
+        $elements_manager->add_category(
+            'wpdm',
+            [
+                'title' => __('Download Manager', WPDM_ELEMENTOR),
+                'icon'  => 'eicon-download-button',
+            ]
+        );
     }
 
     /**
-     * 
-     * 
+     * Register all WPDM widgets with Elementor.
+     *
+     * Includes the widget files and registers each widget class.
+     *
+     * @since 1.0.0
+     * @param Widgets_Manager $widget_manager Elementor widgets manager instance.
+     * @return void
      */
-    public function registerWidgets(Widgets_Manager $widget_manager)
+    public function registerWidgets(Widgets_Manager $widget_manager): void
     {
+        require_once __DIR__ . '/includes.php';
 
-        require_once __DIR__.'/includes.php';
-
-
+        // Package-related widgets
         $widget_manager->register(new PackagesWidget());
-
         $widget_manager->register(new PackageWidget());
-
         $widget_manager->register(new CategoryWidget());
-
-        //$widget_manager->register(new TagWidget());
-
         $widget_manager->register(new AllPackagesWidget());
-
         $widget_manager->register(new SearchResultWidget());
-
-        $widget_manager->register(new RegFormWidget());
-
-        $widget_manager->register(new LoginFormWidget());
-
-        $widget_manager->register(new FrontendWidget());
-
-        $widget_manager->register(new UserDashboardWidget());
-
         $widget_manager->register(new DirectLinkWidget());
 
-        //$widget_manager->register(new UserProfileWidget());
+        // User-related widgets
+        $widget_manager->register(new RegFormWidget());
+        $widget_manager->register(new LoginFormWidget());
+        $widget_manager->register(new FrontendWidget());
+        $widget_manager->register(new UserDashboardWidget());
 
+        // Disabled widgets (uncomment to enable)
+        // $widget_manager->register(new TagWidget());
+        // $widget_manager->register(new UserProfileWidget());
     }
 
+    /**
+     * Get the plugin version.
+     *
+     * @since  1.3.0
+     * @return string Plugin version.
+     */
+    public function getVersion(): string
+    {
+        return self::VERSION;
+    }
 }

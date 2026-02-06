@@ -2,10 +2,39 @@
 
 namespace WPDM\Elementor\Widgets;
 
-use Elementor\Widget_Base;
-
-class CategoryWidget extends Widget_Base
+/**
+ * Category Widget.
+ * Displays packages filtered by category.
+ */
+class CategoryWidget extends BaseWidget
 {
+    /**
+     * Expected settings keys for this widget.
+     */
+    private const SETTINGS_KEYS = [
+        'catid', 'operator', 'title', 'desc', 'items_per_page',
+        'orderby', 'order', 'template', 'author',
+        'cols', 'colspad', 'colsphone', 'toolbar', 'paging'
+    ];
+
+    /**
+     * Settings sanitization rules.
+     */
+    private const SANITIZERS = [
+        'operator' => 'text',
+        'title' => 'text',
+        'desc' => 'text',
+        'items_per_page' => 'int',
+        'orderby' => 'orderby',
+        'order' => 'order',
+        'template' => 'text',
+        'author' => 'text',
+        'cols' => 'int',
+        'colspad' => 'int',
+        'colsphone' => 'int',
+        'toolbar' => 'text',
+        'paging' => 'text',
+    ];
 
     public function get_name()
     {
@@ -14,7 +43,7 @@ class CategoryWidget extends Widget_Base
 
     public function get_title()
     {
-        return 'Packages By Category';
+        return __('Packages By Category', WPDM_ELEMENTOR);
     }
 
     public function get_icon()
@@ -22,214 +51,200 @@ class CategoryWidget extends Widget_Base
         return 'eicon-theme-builder';
     }
 
-    public function get_categories()
-    {
-        return ['wpdm'];
-    }
-
     protected function register_controls()
     {
-
         $this->start_controls_section(
             'content_section',
             [
-                'label' => esc_attr(__('Parameters', WPDM_ELEMENTOR)),
+                'label' => __('Parameters', WPDM_ELEMENTOR),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
-
-        //categories: multi select
         $this->add_control(
             'catid',
             [
-                'label' => esc_attr(__('Include Categories', WPDM_ELEMENTOR)),
+                'label' => __('Include Categories', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
                 'multiple' => true,
-                'options' => get_wpdmcategory_terms(),
+                'options' => $this->getCategoryOptions(),
                 'default' => []
             ]
         );
 
-        //Operator: Choose
         $this->add_control(
             'operator',
             [
-                'label' => esc_attr(__('Operator', WPDM_ELEMENTOR)),
+                'label' => __('Operator', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
-                'options' => ['IN' => 'IN', 'NOT IN' => 'NOT IN', 'AND' => 'AND', 'EXISTS' => 'EXISTS', 'NOT EXISTS' => 'NOT EXISTS'],
+                'options' => [
+                    'IN' => 'IN',
+                    'NOT IN' => 'NOT IN',
+                    'AND' => 'AND',
+                    'EXISTS' => 'EXISTS',
+                    'NOT EXISTS' => 'NOT EXISTS'
+                ],
                 'default' => 'IN',
-                'description' => esc_attr(__("Use this parameter only when you are using multiple categories.", WPDM_ELEMENTOR))
+                'description' => __('Use this parameter only when using multiple categories.', WPDM_ELEMENTOR)
             ]
         );
 
-        //title: Text
         $this->add_control(
             'title',
             [
-                'label' => esc_attr(__('Title', WPDM_ELEMENTOR)),
+                'label' => __('Title', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'text',
-                'description' => esc_attr(__('You can use any text there, if you use “1” then it will show the category title', WPDM_ELEMENTOR)),
+                'description' => __('Use "1" to show category title, or enter custom text', WPDM_ELEMENTOR),
                 'default' => '1'
             ]
         );
 
-        //description: Text
         $this->add_control(
             'desc',
             [
-                'label' => esc_attr(__('Description', WPDM_ELEMENTOR)),
+                'label' => __('Description', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'text',
-                'description' => esc_attr(__('You can use any text there, if you use “1” then it will show the category description', WPDM_ELEMENTOR)),
+                'description' => __('Use "1" to show category description, or enter custom text', WPDM_ELEMENTOR),
                 'default' => '1'
-
             ]
         );
 
-        //items per page: text number
         $this->add_control(
             'items_per_page',
             [
-                'label' => esc_attr(__('Items Per Page', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '10'
+                'label' => __('Items Per Page', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 100,
+                'default' => 10
             ]
         );
 
-
-        //order by: Select
         $this->add_control(
             'orderby',
             [
-                'label' => esc_attr(__('Order By', WPDM_ELEMENTOR)),
+                'label' => __('Order By', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
-                'options' => ['date' => 'Date', 'title' => 'Title'],
+                'options' => ['date' => __('Date', WPDM_ELEMENTOR), 'title' => __('Title', WPDM_ELEMENTOR)],
                 'default' => 'date',
             ]
         );
 
-        //order: Choose
         $this->add_control(
             'order',
             [
-                'label' => esc_attr(__('Order', WPDM_ELEMENTOR)),
+                'label' => __('Order', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    'ASC' => ['title' => 'Ascending', 'icon' => 'fa fa-sort-alpha-down'],
-                    'DESC' => ['title' => 'Descending', 'icon' => 'fa fa-sort-alpha-up']
+                    'ASC' => ['title' => __('Ascending', WPDM_ELEMENTOR), 'icon' => 'eicon-arrow-up'],
+                    'DESC' => ['title' => __('Descending', WPDM_ELEMENTOR), 'icon' => 'eicon-arrow-down']
                 ],
                 'default' => 'DESC',
-                'show_label' => false
+                'toggle' => false
             ]
         );
-
-
-        //link template: select
 
         $this->add_control(
             'template',
             [
-                'label' => esc_attr(__('Link Template', WPDM_ELEMENTOR)),
+                'label' => __('Link Template', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::SELECT2,
-                'options' => get_elementor_link_templates(),
+                'options' => $this->getLinkTemplateOptions(),
                 'default' => 'link-template-default'
             ]
         );
 
-
-        //authors: Text
         $this->add_control(
             'author',
             [
-                'label' => esc_attr(__('Authors', WPDM_ELEMENTOR)),
+                'label' => __('Authors', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::TEXT,
                 'input_type' => 'text',
-                'placeholder' => esc_attr(__('e.g: 1, 2, 3', WPDM_ELEMENTOR)),
-                'description' => esc_attr(__('Author IDs seperated by comma', WPDM_ELEMENTOR))
+                'placeholder' => __('e.g: 1, 2, 3', WPDM_ELEMENTOR),
+                'description' => __('Author IDs separated by comma', WPDM_ELEMENTOR)
             ]
         );
 
-        //cols web
         $this->add_control(
             'cols',
             [
-                'label' => esc_attr(__('Columns In PC', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '3'
+                'label' => __('Columns (Desktop)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 6,
+                'default' => 3
             ]
         );
 
-        //cols tab
         $this->add_control(
             'colspad',
             [
-                'label' => esc_attr(__('Columns In Tab', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '2'
+                'label' => __('Columns (Tablet)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 4,
+                'default' => 2
             ]
         );
 
-        //cols phone
         $this->add_control(
             'colsphone',
             [
-                'label' => esc_attr(__('Columns In Phone', WPDM_ELEMENTOR)),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'input_type' => 'number',
-                'default' => '1'
+                'label' => __('Columns (Phone)', WPDM_ELEMENTOR),
+                'type' => \Elementor\Controls_Manager::NUMBER,
+                'min' => 1,
+                'max' => 2,
+                'default' => 1
             ]
         );
 
-        //Show Toolbar: radio
         $this->add_control(
             'toolbar',
             [
-                'label' => esc_attr(__('Show Toolbar', WPDM_ELEMENTOR)),
+                'label' => __('Show Toolbar', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    '1' => ['title' => 'Show', 'icon' => 'fa fa-check'],
-                    '0' => ['title' => 'Hide', 'icon' => 'fa fa-times']
+                    '1' => ['title' => __('Show', WPDM_ELEMENTOR), 'icon' => 'eicon-check'],
+                    '0' => ['title' => __('Hide', WPDM_ELEMENTOR), 'icon' => 'eicon-close']
                 ],
                 'default' => '1',
             ]
         );
 
-        //show pagination: radio
         $this->add_control(
             'paging',
             [
-                'label' => esc_attr(__('Paging', WPDM_ELEMENTOR)),
+                'label' => __('Pagination', WPDM_ELEMENTOR),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
-                    '1' => ['title' => 'Show', 'icon' => 'fa fa-check'],
-                    '0' => ['title' => 'Hide', 'icon' => 'fa fa-times']
+                    '1' => ['title' => __('Show', WPDM_ELEMENTOR), 'icon' => 'eicon-check'],
+                    '0' => ['title' => __('Hide', WPDM_ELEMENTOR), 'icon' => 'eicon-close']
                 ],
                 'default' => '0',
             ]
         );
 
-
         $this->end_controls_section();
     }
 
-
-
     protected function render()
     {
+        $settings = $this->getCleanSettings(self::SETTINGS_KEYS);
+        $settings = $this->sanitizeSettings($settings, self::SANITIZERS);
 
-        $settings = $this->get_settings_for_display();
-        $cus_settings = array_slice($settings, 0, 15);
+        if (empty($settings['catid'])) {
+            return;
+        }
 
-		if(!isset($cus_settings['catid'])) return "";
+        // Convert catid array to comma-separated id
+        $settings['id'] = is_array($settings['catid'])
+            ? implode(',', array_map('sanitize_text_field', $settings['catid']))
+            : sanitize_text_field($settings['catid']);
 
-        $cus_settings['id'] = is_array($cus_settings['catid']) ? implode(",", $cus_settings['catid']) : $cus_settings['catid'];
+        unset($settings['catid']);
 
-        echo WPDM()->categories->shortcode->listPackages($cus_settings);
-
+        echo WPDM()->categories->shortcode->listPackages($settings);
     }
 }
