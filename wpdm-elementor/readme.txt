@@ -3,7 +3,7 @@ Contributors: w3eden, codename065, ohanspace, shahriar0822, shimo16ab, shafayat-
 Donate link:
 Tags: download manager, elementor, document management, file manager, digital store, ecommerce, document management plugin,  download monitor
 Requires at least: 5.3
-Tested up to: 6.9
+Tested up to: 7.1
 License: GPLv2 or later
 
 
@@ -38,6 +38,9 @@ Create beautiful download tables with our visual table builder:
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 2.0.2 - 2026.08.31 =
+✅ Enhanced System Optimization and Compatibility Assurance Update
 
 = 2.0.1 - 2026.01.19 =
 🐞 Fixed an issue with the author dashboard widget
